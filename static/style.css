@@ -1,0 +1,31 @@
+#chatbox {
+    width: 400px;
+    height: 300px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: scroll;
+    background: #f9f9f9;
+    font-family: sans-serif;
+  }
+  
+  .bubble {
+    max-width: 75%;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    clear: both;
+    line-height: 1.4em;
+  }
+  
+  .user-bubble {
+    background-color: #d0f0ff;
+    float: right;
+    text-align: right;
+  }
+  
+  .bot-bubble {
+    background-color: #f0f0f0;
+    float: left;
+    text-align: left;
+  }
+  
