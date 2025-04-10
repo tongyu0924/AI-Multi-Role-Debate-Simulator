@@ -90,7 +90,7 @@ def debate():
 
     return jsonify({"role": role, "reply": reply})
 
-# ✅ Chat mode
+# Chat mode
 @app.route("/chat", methods=["POST"])
 def chat():
     if current_mode != "chat":
