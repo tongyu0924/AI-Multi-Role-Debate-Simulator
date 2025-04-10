@@ -5,17 +5,35 @@ document.addEventListener("DOMContentLoaded", function () {
   const debateButton = document.getElementById("debateButton");
   const topicInput = document.getElementById("topicInput");
   const roundInput = document.getElementById("roundInput");
+  const modeSelect = document.getElementById("modeSelect");
 
-  // Send chat message
-  sendButton.addEventListener("click", function (event) {
-    event.preventDefault();
-    sendMessage();
+  // Default mode is "debate"
+  let currentMode = "debate"; 
+
+  // Mode switch logic
+  modeSelect.addEventListener("change", function () {
+    currentMode = modeSelect.value;
+    console.log("Switched to mode:", currentMode);
   });
 
-  // Start debate logic
+  // Send chat message (works in Chat Mode)
+  sendButton.addEventListener("click", function (event) {
+    event.preventDefault();
+    if (currentMode === "chat") {
+      sendMessage();
+    } else {
+      alert("Please switch to Chat Mode.");
+    }
+  });
+
+  // Start debate (works in Debate Mode)
   debateButton.addEventListener("click", function (event) {
     event.preventDefault();
-    startDebate();
+    if (currentMode === "debate") {
+      startDebate();
+    } else {
+      alert("Please switch to Debate Mode.");
+    }
   });
 
   function sendMessage() {
@@ -43,11 +61,11 @@ document.addEventListener("DOMContentLoaded", function () {
   // Debate sequence
   function startDebate() {
     const topic = topicInput.value.trim();
-    const rounds = parseInt(roundInput.value) || 6; // Use 6 if invalid
+    const rounds = parseInt(roundInput.value) || 6; // Default to 6 rounds if input is invalid
 
     if (!topic) return;
 
-    fetch('/reset', { method: "POST" });
+    fetch('/reset', { method: "POST" }); // Reset previous data before starting a new debate
 
     for (let i = 0; i < rounds; i++) {
       fetch("/debate", {
@@ -65,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Show bubble message
+  // Show bubble message in the chat
   function appendMessage(role, msg) {
     const bubble = document.createElement("div");
     const safeRole = (role || "unknown").toLowerCase();
@@ -75,5 +93,3 @@ document.addEventListener("DOMContentLoaded", function () {
     chatbox.scrollTop = chatbox.scrollHeight;
   }
 });
-
-  

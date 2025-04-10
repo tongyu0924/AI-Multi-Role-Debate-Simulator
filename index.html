@@ -103,6 +103,22 @@
     button:hover {
       background-color: #0056b3;
     }
+
+    .mode-select {
+      display: block;
+      margin: 20px auto;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .mode-select:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 <body>
@@ -117,6 +133,13 @@
 
     <div id="chatBox"></div>
 
+    <!-- Mode Selector -->
+    <select id="modeSelect">
+      <option value="debate">Debate Mode</option>
+      <option value="chat">Chat Mode</option>
+    </select>
+    <button class="mode-select" onclick="switchMode()">Switch Mode</button>
+
     <div class="button-group">
       <button onclick="startDebate()">Start Debate</button>
       <button onclick="clearChat()">Clear</button>
@@ -124,6 +147,8 @@
   </div>
 
   <script>
+    let currentMode = 'debate'; // Default mode is Debate
+
     async function startDebate() {
       const topic = document.getElementById("topicInput").value.trim();
       const rounds = parseInt(document.getElementById("roundInput").value);
@@ -143,6 +168,20 @@
         appendMessage(data.role, data.reply);
         await new Promise(r => setTimeout(r, 800));
       }
+    }
+
+    async function switchMode() {
+      currentMode = document.getElementById("modeSelect").value;
+      
+      // Switch mode by sending the mode change request to the backend
+      const res = await fetch("/switch_mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: currentMode })
+      });
+      
+      const data = await res.json();
+      alert(data.status);
     }
 
     function appendMessage(role, message) {

@@ -23,16 +23,35 @@ roles = ["Pro", "Con"]
 debate_history = ""
 current_turn = 0
 debate_topic = "Artificial intelligence"  # Default debate topic
+current_mode = "debate"  # Default mode is Debate Mode
 
 # Home page route
 @app.route("/")
 def index():
     return send_from_directory('.', 'index.html')
 
-# ✅ Debate mode (supporting topic input)
+#Switch Mode
+@app.route("/switch_mode", methods=["POST"])
+def switch_mode():
+    data = request.get_json()
+    mode = data.get("mode", "").strip().lower()
+    
+    if mode not in ["debate", "chat"]:
+        return jsonify({"error": "Invalid mode. Please choose either 'debate' or 'chat'."}), 400
+    
+    # Store the mode for future requests (you can use a global variable or session)
+    global current_mode
+    current_mode = mode
+    
+    return jsonify({"status": f"Switched to {mode} mode."})
+
+# Debate mode (supporting topic input)
 @app.route("/debate", methods=["POST"])
 def debate():
     global debate_history, current_turn, debate_topic
+    if current_mode != "debate":
+        return jsonify({"error": "Please switch to Debate Mode first."}), 400
+
     data = request.get_json()
     topic = data.get("topic", "").strip()
     role = roles[current_turn]
@@ -74,6 +93,9 @@ def debate():
 # ✅ Chat mode
 @app.route("/chat", methods=["POST"])
 def chat():
+    if current_mode != "chat":
+        return jsonify({"error": "Please switch to Chat Mode first."}), 400
+
     data = request.get_json()
     role = data.get("role", "")
     message = data.get("message", "")
@@ -115,12 +137,14 @@ def chat():
 # Reset button (to restart the debate)
 @app.route("/reset", methods=["POST"])
 def reset():
-    global chat_history, debate_history, current_turn
+    global chat_history, debate_history, current_turn, current_mode
     chat_history = {"user": "", "assistant": ""}
     debate_history = ""
     current_turn = 0
+    current_mode = "debate"  # Reset the mode to debate by default
     return jsonify({"status": "reset successful"})
 
 # Start the server
 if __name__ == "__main__":
     app.run(debug=True, port=5009)
+
