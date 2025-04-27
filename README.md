@@ -11,7 +11,7 @@ AI-Debate-Simulator is an interactive debate simulation powered by AI. This proj
 - **Round-based Debates**: The debate progresses through multiple rounds, alternating between Pro and Con responses.
 
 ## Requirements:
-- Python 3.6+
+- Python 3.8
 - Install the necessary dependencies with `pip`:
 
     ```bash
