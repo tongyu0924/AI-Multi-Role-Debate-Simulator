@@ -2,7 +2,7 @@
 
 AI-Debate-Simulator is an interactive debate simulation powered by AI. This project allows two AI agents to engage in a debate on a given topic. The agents take on opposing roles (Pro and Con) and generate responses based on the input topic.
 
-![Demo Screenshot](image.png)
+![Demo Screenshot](demo.png)
 
 ## Features:
 - **Debate Mode**: Simulates a debate with two AI agents taking opposing stances on a provided topic.
