@@ -81,20 +81,22 @@ While the app is running, you can switch models dynamically by calling the follo
 
 **POST** `/set_model`
 
-```json
-{
-  "model": "openai",
-  "api_key": "your-api-key-here"
-}
+To switch to **GPT-4o** (OpenAI API):
+
+```bash
+curl -X POST http://127.0.0.1:5009/set_model \
+  -H "Content-Type: application/json" \
+  -d '{"model": "openai", "api_key": "sk-your-api-key-here"}'
 ```
 
- To switch back to the local model:
-```json
-{
-  "model": "local"
-}
+To switch back to the local model (GPT-Neo):
+```bash
+curl -X POST http://127.0.0.1:5009/set_model \
+  -H "Content-Type: application/json" \
+  -d '{"model": "local"}'
 ```
-Once GPT-4o is enabled, it will be used for both Debate and Chat modes.
+
+Once the model is set, all subsequent requests to /debate and /chat will use the selected model without restarting the server.
 
 ## License:
 This project is open-source and available under the MIT License. See the LICENSE file for more details.
