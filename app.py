@@ -24,7 +24,7 @@ agent_instructions = {
     "Expert": "You provide a neutral and analytical perspective.",
     "Observer": "You summarize or raise questions based on the ongoing debate."
 }
-debate_history = ""
+debate_history = {role: [] for role in roles}
 current_turn = 0
 debate_topic = "Artificial intelligence"
 current_mode = "debate"
@@ -79,13 +79,12 @@ def debate():
     topic = data.get("topic", "").strip()
     role = roles[current_turn]
 
-    if topic and debate_history.strip() == "":
+    if topic and all(len(debate_history[r]) == 0 for r in roles):
         debate_topic = topic
-        debate_history = f"{role}: {agent_instructions[role]}\n"
-    elif debate_history.strip() == "":
-        debate_history = f"{role}: {agent_instructions[role]}\n"
+        for r in roles:
+            debate_history[r] = [f"{r}: {agent_instructions[r]}"]
 
-    prompt = debate_history + f"\n{role}:"
+    prompt = "\n".join([msg for msgs in debate_history.values() for msg in msgs]) + f"\n{role}:"
 
     if current_model == "openai":
         import openai
@@ -115,7 +114,7 @@ def debate():
         reply = decoded_output[len(tokenizer.decode(input_ids[0], skip_special_tokens=True)):].strip()
         reply = re.split(r'\n(?:' + '|'.join(roles) + '):', reply)[0].strip()
 
-    debate_history += f"\n{role}: {reply}"
+    debate_history[role].append(f"{role}: {reply}")
     current_turn = (current_turn + 1) % len(roles)
 
     return jsonify({"role": role, "reply": reply})
@@ -175,7 +174,7 @@ def chat():
 def reset():
     global chat_history, debate_history, current_turn, current_mode
     chat_history = {"user": "", "assistant": ""}
-    debate_history = ""
+    debate_history = {role: [] for role in roles}
     current_turn = 0
     current_mode = "debate"
     return jsonify({"status": "reset successful"})
