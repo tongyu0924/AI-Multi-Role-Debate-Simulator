@@ -5,10 +5,11 @@ AI-Debate-Simulator is an interactive debate simulation powered by AI. This proj
 ![Demo Screenshot](demo.png)
 
 ## Features:
-- **Debate Mode**: Simulates a debate with two AI agents taking opposing stances on a provided topic.
-- **Chat Mode**: Allows for conversational interactions with the AI assistant.
-- **Customizable Topics**: You can input any debate topic of your choice.
-- **Round-based Debates**: The debate progresses through multiple rounds, alternating between Pro and Con responses.
+- **Debate Mode**: AI agents simulate structured debates based on user topics.
+- **Chat Mode**: General-purpose conversation mode with the AI.
+- **Model Selection**: Choose between a lightweight local model or powerful OpenAI API (gpt-4o).
+- **Custom Topics**: Provide any topic you'd like the AI to debate.
+- **Round-based Structure**: The system alternates speakers across debate rounds.
 
 ## Requirements:
 - Python 3.8
@@ -42,7 +43,7 @@ AI-Debate-Simulator is an interactive debate simulation powered by AI. This proj
 
 5. Access the application in your browser at:
     ```
-    http://127.0.0.1:5007
+    http://127.0.0.1:5009
     ```
 
 ## How to Use:
@@ -56,9 +57,44 @@ AI-Debate-Simulator is an interactive debate simulation powered by AI. This proj
    - Interact with the AI in a chat-based format. The AI will respond based on the context provided.
 
 ## Notes:
-- The app uses **GPT-Neo** (125M) for generating text responses. If you have GPU support, the app will automatically run on it for faster performance. If no GPU is available, it will run on the CPU.
+- The app supports two models: a **local model (GPT-Neo 125M)** and **GPT-4o via OpenAI API**.
+- By default, it runs locally using GPT-Neo. If a GPU is available, it will be used automatically; otherwise, it will fall back to CPU.
+- For higher-quality responses, you can switch to GPT-4o by providing your OpenAI API key (see section below).
+- You can modify the `app.py` file to adjust the number of debate rounds, change generation settings, or customize behaviors.
 
-- You can modify the `app.py` file for additional customizations, such as adding more rounds or changing debate behaviors.
+## Using GPT-4o via OpenAI API:
+
+By default, the app uses a lightweight local model (**GPT-Neo 125M**).  
+To use **GPT-4o** via the OpenAI API instead, you can set your API key in one of two ways:
+
+### Option 1: Use Environment Variable
+Before running the app, set the `OPENAI_API_KEY` environment variable:
+
+```bash
+export OPENAI_API_KEY=your-api-key-here  # macOS/Linux
+# set OPENAI_API_KEY=your-api-key-here  # Windows
+```
+
+### Option 2: Use Runtime API
+
+While the app is running, you can switch models dynamically by calling the following API endpoint:
+
+**POST** `/set_model`
+
+```json
+{
+  "model": "openai",
+  "api_key": "your-api-key-here"
+}
+```
+
+ To switch back to the local model:
+```json
+{
+  "model": "local"
+}
+```
+Once GPT-4o is enabled, it will be used for both Debate and Chat modes.
 
 ## License:
 This project is open-source and available under the MIT License. See the LICENSE file for more details.
