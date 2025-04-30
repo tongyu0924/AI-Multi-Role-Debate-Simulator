@@ -2,14 +2,20 @@
 
 AI-Debate-Simulator is an interactive debate simulation powered by AI. This project allows two AI agents to engage in a debate on a given topic. The agents take on opposing roles (Pro and Con) and generate responses based on the input topic.
 
-![Demo Screenshot](demo.png)
+![Demo Screenshot](multi_role.png)
 
 ## Features:
-- **Debate Mode**: AI agents simulate structured debates based on user topics.
-- **Chat Mode**: General-purpose conversation mode with the AI.
-- **Model Selection**: Choose between a lightweight local model or powerful OpenAI API (gpt-4o).
-- **Custom Topics**: Provide any topic you'd like the AI to debate.
-- **Round-based Structure**: The system alternates speakers across debate rounds.
+- **Multi-Role Debate Mode**: AI agents take on different roles (e.g., Pro, Con, Expert, Observer) and simulate structured debates on user-defined topics.  
+- **Chat Mode**: Engage in general-purpose conversation with the assistant.  
+- **Model Selection**: Dynamically choose between a lightweight local model or the powerful GPT-4o via OpenAI API.  
+- **Custom Topics**: Define any debate topic for the agents to explore.  
+- **Round-based Discussion**: Roles take turns speaking in multiple structured rounds
+
+## Roles and Their Functions
+- **Pro**: Argues in favor of the debate topic, presenting supporting evidence and reasoning.
+- **Con**: Argues against the debate topic, highlighting risks, flaws, or counterexamples.
+- **Expert**: Offers neutral, technical, or factual insights to deepen the discussion without taking sides.
+- **Observer**: Summarizes, reflects, or critiques the ongoing debate, often adding meta-level commentary.
 
 ## Requirements:
 - Python 3.8
