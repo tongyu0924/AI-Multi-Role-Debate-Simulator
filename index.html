@@ -67,19 +67,31 @@
       margin: 8px 0;
       border-radius: 12px;
       line-height: 1.5em;
+      clear: both;
+      direction: ltr;
     }
 
-    .pro {
-      background-color: #d0f0ff;
+    .pro-bubble {
+      background-color: #d4edda;
       float: left;
-      clear: both;
       text-align: left;
     }
 
-    .con {
-      background-color: #ffd9d9;
+    .con-bubble {
+      background-color: #f8d7da;
       float: right;
-      clear: both;
+      text-align: left;
+    }
+
+    .expert-bubble {
+      background-color: #d1ecf1;
+      float: left;
+      text-align: left;
+    }
+
+    .observer-bubble {
+      background-color: #fff3cd;
+      float: right;
       text-align: left;
     }
 
@@ -133,7 +145,6 @@
 
     <div id="chatBox"></div>
 
-    <!-- Mode Selector -->
     <select id="modeSelect">
       <option value="debate">Debate Mode</option>
       <option value="chat">Chat Mode</option>
@@ -147,7 +158,7 @@
   </div>
 
   <script>
-    let currentMode = 'debate'; // Default mode is Debate
+    let currentMode = 'debate';
 
     async function startDebate() {
       const topic = document.getElementById("topicInput").value.trim();
@@ -156,6 +167,8 @@
       if (isNaN(rounds) || rounds <= 0) return alert("Please enter a valid number of rounds.");
 
       document.getElementById("chatBox").innerHTML = "";
+
+      await fetch('/reset', { method: 'POST' });
 
       for (let i = 0; i < rounds; i++) {
         const res = await fetch("/debate", {
@@ -172,14 +185,11 @@
 
     async function switchMode() {
       currentMode = document.getElementById("modeSelect").value;
-      
-      // Switch mode by sending the mode change request to the backend
       const res = await fetch("/switch_mode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode: currentMode })
       });
-      
       const data = await res.json();
       alert(data.status);
     }
@@ -187,7 +197,8 @@
     function appendMessage(role, message) {
       const chatBox = document.getElementById("chatBox");
       const bubble = document.createElement("div");
-      bubble.className = `bubble ${role.toLowerCase()}`;
+      const safeRole = (role || "unknown").toLowerCase();
+      bubble.className = `bubble ${safeRole}-bubble`;
       bubble.innerHTML = `<strong>${role}:</strong><br>${message}`;
       chatBox.appendChild(bubble);
       chatBox.scrollTop = chatBox.scrollHeight;

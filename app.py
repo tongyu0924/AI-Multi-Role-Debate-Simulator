@@ -17,7 +17,13 @@ model.to(device)
 
 # Global state variables
 chat_history = {"user": "", "assistant": ""}
-roles = ["Pro", "Con"]
+roles = ["Pro", "Con", "Expert", "Observer"]
+agent_instructions = {
+    "Pro": "You argue strongly in favor of the topic.",
+    "Con": "You argue strongly against the topic.",
+    "Expert": "You provide a neutral and analytical perspective.",
+    "Observer": "You summarize or raise questions based on the ongoing debate."
+}
 debate_history = ""
 current_turn = 0
 debate_topic = "Artificial intelligence"
@@ -75,9 +81,9 @@ def debate():
 
     if topic and debate_history.strip() == "":
         debate_topic = topic
-        debate_history = f"Pro: I believe {debate_topic} will benefit society.\nCon:"
+        debate_history = f"{role}: {agent_instructions[role]}\n"
     elif debate_history.strip() == "":
-        debate_history = f"Pro: I believe {debate_topic} will benefit society.\nCon:"
+        debate_history = f"{role}: {agent_instructions[role]}\n"
 
     prompt = debate_history + f"\n{role}:"
 
@@ -87,7 +93,7 @@ def debate():
         response = openai.ChatCompletion.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": f"You are debating the topic: {debate_topic}. You are the {role} side."},
+                {"role": "system", "content": f"You are {role}. {agent_instructions[role]} The topic is: {debate_topic}"},
                 {"role": "user", "content": prompt}
             ]
         )
@@ -107,10 +113,10 @@ def debate():
         )
         decoded_output = tokenizer.decode(output[0], skip_special_tokens=True)
         reply = decoded_output[len(tokenizer.decode(input_ids[0], skip_special_tokens=True)):].strip()
-        reply = re.split(r'\n(?:Pro|Con):', reply)[0].strip()
+        reply = re.split(r'\n(?:' + '|'.join(roles) + '):', reply)[0].strip()
 
     debate_history += f"\n{role}: {reply}"
-    current_turn = 1 - current_turn
+    current_turn = (current_turn + 1) % len(roles)
 
     return jsonify({"role": role, "reply": reply})
 

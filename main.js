@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function appendMessage(role, msg) {
     const bubble = document.createElement("div");
     const safeRole = (role || "unknown").toLowerCase();
-    bubble.className = `bubble ${safeRole}`;
+    bubble.className = `bubble ${safeRole}-bubble`;
     bubble.innerHTML = `<strong>${role || "Unknown"}:</strong><br>${msg}`;
     chatbox.appendChild(bubble);
     chatbox.scrollTop = chatbox.scrollHeight;
