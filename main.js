@@ -1,95 +1,131 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const sendButton = document.getElementById("sendButton");
-  const userInput = document.getElementById("userInput");
-  const chatbox = document.getElementById("chatbox");
-  const debateButton = document.getElementById("debateButton");
-  const topicInput = document.getElementById("topicInput");
-  const roundInput = document.getElementById("roundInput");
-  const modeSelect = document.getElementById("modeSelect");
+// Stores all dialogue history per role
+const roleHistory = {
+  pro: [],
+  con: [],
+  expert: [],
+  observer: []
+};
 
-  // Default mode is "debate"
-  let currentMode = "debate"; 
+// Renders all four characters side by side with their latest message
+function renderAllRoles() {
+  const chatbox = document.getElementById("chatBox");
+  chatbox.innerHTML = "";
 
-  // Mode switch logic
-  modeSelect.addEventListener("change", function () {
-    currentMode = modeSelect.value;
-    console.log("Switched to mode:", currentMode);
-  });
+  const roleImages = {
+    pro: "/static/images/pro_role.png",
+    con: "/static/images/con_role.png",
+    expert: "/static/images/expert.png",
+    observer: "/static/images/observer.png"
+  };
 
-  // Send chat message (works in Chat Mode)
-  sendButton.addEventListener("click", function (event) {
-    event.preventDefault();
-    if (currentMode === "chat") {
-      sendMessage();
-    } else {
-      alert("Please switch to Chat Mode.");
-    }
-  });
+  const container = document.createElement("div");
+  container.className = "role-grid";
 
-  // Start debate (works in Debate Mode)
-  debateButton.addEventListener("click", function (event) {
-    event.preventDefault();
-    if (currentMode === "debate") {
-      startDebate();
-    } else {
-      alert("Please switch to Debate Mode.");
-    }
-  });
+  Object.keys(roleHistory).forEach(role => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "character-scene";
 
-  function sendMessage() {
-    var message = userInput.value.trim();
-    if (message === '') return;
+    const avatar = document.createElement("img");
+    avatar.src = roleImages[role];
+    avatar.alt = role;
+    avatar.className = "avatar-big";
+    avatar.onerror = () => avatar.src = "/static/images/default.png";
 
-    appendMessage("user", message);
-
-    fetch('/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: "user", message: message })
-    })
-    .then(response => response.json())
-    .then(data => {
-      appendMessage("assistant", data.reply);
-      userInput.value = '';
-      chatbox.scrollTop = chatbox.scrollHeight;
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-  }
-
-  // Debate sequence
-  function startDebate() {
-    const topic = topicInput.value.trim();
-    const rounds = parseInt(roundInput.value) || 6; // Default to 6 rounds if input is invalid
-
-    if (!topic) return;
-
-    fetch('/reset', { method: "POST" }); // Reset previous data before starting a new debate
-
-    for (let i = 0; i < rounds; i++) {
-      fetch("/debate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: topic })
-      })
-      .then(response => response.json())
-      .then(data => {
-        appendMessage(data.role, data.reply);
-      })
-      .catch(error => {
-        console.error("Error:", error);
-      });
-    }
-  }
-
-  // Show bubble message in the chat
-  function appendMessage(role, msg) {
     const bubble = document.createElement("div");
-    const safeRole = (role || "unknown").toLowerCase();
-    bubble.className = `bubble ${safeRole}`;
-    bubble.innerHTML = `<strong>${role || "Unknown"}:</strong><br>${msg}`;
-    chatbox.appendChild(bubble);
-    chatbox.scrollTop = chatbox.scrollHeight;
+    bubble.className = "dialogue-bubble";
+    const latestMsg = roleHistory[role].at(-1) || "...";
+
+    bubble.innerHTML = `
+      <div class="role-name">${capitalize(role)}</div>
+      <div class="message-text">${latestMsg}</div>
+    `;
+
+    wrapper.appendChild(bubble);
+    wrapper.appendChild(avatar);
+    container.appendChild(wrapper);
+  });
+
+  chatbox.appendChild(container);
+  chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+// Display combined full history
+function showCombinedHistory() {
+  const chatbox = document.getElementById("chatBox");
+  chatbox.innerHTML = "";
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "character-scene";
+
+  const title = document.createElement("h3");
+  title.textContent = "📄 Full Debate History";
+  title.style.textAlign = "center";
+  wrapper.appendChild(title);
+
+  const list = document.createElement("ul");
+  list.style.listStyle = "none";
+  list.style.padding = "0";
+
+  const combined = [];
+  const rounds = Math.max(...Object.values(roleHistory).map(arr => arr.length));
+
+  for (let i = 0; i < rounds; i++) {
+    for (const role of ["pro", "con", "expert", "observer"]) {
+      if (roleHistory[role][i]) {
+        combined.push({ role, msg: roleHistory[role][i] });
+      }
+    }
   }
-});
+
+  combined.forEach((entry, index) => {
+    const item = document.createElement("li");
+    item.className = "history-bubble";
+    item.innerHTML = `<strong>Round ${Math.floor(index / 4) + 1} [${capitalize(entry.role)}]:</strong> ${entry.msg}`;
+    list.appendChild(item);
+  });
+
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "🔙 Back to Dialogue";
+  backBtn.style.marginTop = "20px";
+  backBtn.onclick = () => renderAllRoles();
+
+  wrapper.appendChild(list);
+  wrapper.appendChild(backBtn);
+  chatbox.appendChild(wrapper);
+  chatbox.scrollTop = 0;
+}
+
+// Starts the debate and updates all roles per round
+async function startDebate() {
+  const topic = document.getElementById("topicInput").value.trim();
+  const rounds = parseInt(document.getElementById("roundInput").value);
+  if (!topic) return alert("Please enter a topic.");
+  if (isNaN(rounds) || rounds <= 0) return alert("Invalid round count.");
+
+  Object.keys(roleHistory).forEach(r => roleHistory[r] = []);
+  await fetch('/reset', { method: "POST" });
+
+  for (let i = 0; i < rounds * 4; i++) {
+    const res = await fetch("/debate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic })
+    });
+
+    const data = await res.json();
+    const roleKey = data.role?.toLowerCase();
+    if (data.reply && roleHistory[roleKey]) {
+      roleHistory[roleKey].push(data.reply);
+    }
+
+    renderAllRoles();
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+
+  alert("Debate completed!");
+}
+
+// Capitalize first letter utility
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
