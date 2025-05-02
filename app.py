@@ -7,7 +7,7 @@ import re
 from openai import OpenAI
 
 # Set OpenAI API key
-os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
+# os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 
