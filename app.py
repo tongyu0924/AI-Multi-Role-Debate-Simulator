@@ -4,34 +4,42 @@ import torch
 import os
 import re
 
-app = Flask(__name__, static_folder='.', static_url_path='')
+# Serve /static normally
+app = Flask(__name__, static_folder='static', static_url_path='/static')
+
+# Add route to serve main.js if it's in the root directory
+@app.route("/main.js")
+def serve_main_js():
+    return send_from_directory(os.getcwd(), "main.js")  # serves from current working directory
 
 # Load local GPT-Neo model and tokenizer
 model_name = "EleutherAI/gpt-neo-125M"
 tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 model = GPTNeoForCausalLM.from_pretrained(model_name)
 
-# Use GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
-# Global state variables
+# App state
 chat_history = {"user": "", "assistant": ""}
-roles = ["Pro", "Con"]
-debate_history = ""
+roles = ["Pro", "Con", "Expert", "Observer"]
+agent_instructions = {
+    "Pro": "You argue strongly in favor of the topic.",
+    "Con": "You argue strongly against the topic.",
+    "Expert": "You provide a neutral and analytical perspective.",
+    "Observer": "You summarize or raise questions based on the ongoing debate."
+}
+debate_history = {role: [] for role in roles}
 current_turn = 0
 debate_topic = "Artificial intelligence"
 current_mode = "debate"
 current_model = "local"
-
-# Use environment variable as default OpenAI key
 openai_api_key = os.environ.get("OPENAI_API_KEY", "")
 
 @app.route("/")
 def index():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory(os.getcwd(), "index.html")
 
-# Set the model (local or openai)
 @app.route("/set_model", methods=["POST"])
 def set_model():
     global current_model, openai_api_key
@@ -51,18 +59,16 @@ def set_model():
 
     return jsonify({"status": f"Model set to '{model}'."})
 
-# Switch between 'debate' or 'chat' mode
 @app.route("/switch_mode", methods=["POST"])
 def switch_mode():
     global current_mode
     data = request.get_json()
     mode = data.get("mode", "").strip().lower()
     if mode not in ["debate", "chat"]:
-        return jsonify({"error": "Invalid mode. Please choose either 'debate' or 'chat'."}), 400
+        return jsonify({"error": "Invalid mode. Choose 'debate' or 'chat'."}), 400
     current_mode = mode
     return jsonify({"status": f"Switched to {mode} mode."})
 
-# Debate endpoint
 @app.route("/debate", methods=["POST"])
 def debate():
     global debate_history, current_turn, debate_topic
@@ -73,24 +79,23 @@ def debate():
     topic = data.get("topic", "").strip()
     role = roles[current_turn]
 
-    if topic and debate_history.strip() == "":
+    if topic and all(len(debate_history[r]) == 0 for r in roles):
         debate_topic = topic
-        debate_history = f"Pro: I believe {debate_topic} will benefit society.\nCon:"
-    elif debate_history.strip() == "":
-        debate_history = f"Pro: I believe {debate_topic} will benefit society.\nCon:"
+        for r in roles:
+            debate_history[r] = []
 
-    prompt = debate_history + f"\n{role}:"
+    prompt = "\n".join([
+        f"{r}: {msg}" for r in roles for msg in debate_history[r]
+    ]) + f"\n{role}:"
 
     if current_model == "openai":
         import openai
         openai.api_key = openai_api_key
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": f"You are debating the topic: {debate_topic}. You are the {role} side."},
-                {"role": "user", "content": prompt}
-            ]
-        )
+        messages = [
+            {"role": "system", "content": f"You are {role}. {agent_instructions[role]} The debate topic is: {debate_topic}"},
+            {"role": "user", "content": prompt}
+        ]
+        response = openai.ChatCompletion.create(model="gpt-4o", messages=messages)
         reply = response.choices[0].message.content.strip()
     else:
         input_ids = tokenizer.encode(prompt, return_tensors="pt", truncation=True, max_length=800)
@@ -107,14 +112,12 @@ def debate():
         )
         decoded_output = tokenizer.decode(output[0], skip_special_tokens=True)
         reply = decoded_output[len(tokenizer.decode(input_ids[0], skip_special_tokens=True)):].strip()
-        reply = re.split(r'\n(?:Pro|Con):', reply)[0].strip()
+        reply = re.split(r'\n(?:' + '|'.join(roles) + '):', reply)[0].strip()
 
-    debate_history += f"\n{role}: {reply}"
-    current_turn = 1 - current_turn
-
+    debate_history[role].append(reply)
+    current_turn = (current_turn + 1) % len(roles)
     return jsonify({"role": role, "reply": reply})
 
-# Chat endpoint
 @app.route("/chat", methods=["POST"])
 def chat():
     if current_mode != "chat":
@@ -123,7 +126,6 @@ def chat():
     data = request.get_json()
     role = data.get("role", "")
     message = data.get("message", "")
-
     if role not in ["user", "assistant"] or not message:
         return jsonify({"error": "Invalid input"}), 400
 
@@ -135,9 +137,7 @@ def chat():
         openai.api_key = openai_api_key
         response = openai.ChatCompletion.create(
             model="gpt-4o",
-            messages=[
-                {"role": "user", "content": message}
-            ]
+            messages=[{"role": "user", "content": message}]
         )
         reply = response.choices[0].message.content.strip()
     else:
@@ -164,12 +164,18 @@ def chat():
 
     return jsonify({"reply": reply})
 
-# Reset all state
+@app.route("/history/<role>", methods=["GET"])
+def get_history(role):
+    role = role.capitalize()
+    if role not in debate_history:
+        return jsonify({"error": "Invalid role"}), 400
+    return jsonify({"role": role, "history": debate_history[role]})
+
 @app.route("/reset", methods=["POST"])
 def reset():
     global chat_history, debate_history, current_turn, current_mode
     chat_history = {"user": "", "assistant": ""}
-    debate_history = ""
+    debate_history = {role: [] for role in roles}
     current_turn = 0
     current_mode = "debate"
     return jsonify({"status": "reset successful"})

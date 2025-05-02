@@ -4,200 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Debate Simulator</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f2f2f2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .container {
-      background: #fff;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      max-width: 700px;
-      width: 90%;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-      font-size: 28px;
-      color: #333;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-
-    input[type="text"],
-    input[type="number"] {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    #chatBox {
-      height: 400px;
-      overflow-y: scroll;
-      border: 1px solid #ccc;
-      background-color: #f9f9f9;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-
-    .bubble {
-      max-width: 80%;
-      padding: 10px 15px;
-      margin: 8px 0;
-      border-radius: 12px;
-      line-height: 1.5em;
-    }
-
-    .pro {
-      background-color: #d0f0ff;
-      float: left;
-      clear: both;
-      text-align: left;
-    }
-
-    .con {
-      background-color: #ffd9d9;
-      float: right;
-      clear: both;
-      text-align: left;
-    }
-
-    .button-group {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-    }
-
-    button {
-      padding: 12px 24px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    .mode-select {
-      display: block;
-      margin: 20px auto;
-      padding: 12px;
-      font-size: 16px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .mode-select:hover {
-      background-color: #0056b3;
-    }
-  </style>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+  <!-- Floating history button -->
+  <button class="history-floating-btn" onclick="showCombinedHistory()">📄 View Full History</button>
+
   <div class="container">
     <h1>AI Debate Simulator</h1>
 
+    <!-- Input for topic and round -->
     <label for="topicInput">Enter a debate topic:</label>
     <input type="text" id="topicInput" placeholder="e.g. Should AI agents cooperate or compete?">
 
     <label for="roundInput">Number of Rounds:</label>
     <input type="number" id="roundInput" value="6" min="1" max="20" />
 
-    <div id="chatBox"></div>
+    <!-- Dialogue display area -->
+    <div id="chatBox" class="role-grid"></div>
 
-    <!-- Mode Selector -->
-    <select id="modeSelect">
-      <option value="debate">Debate Mode</option>
-      <option value="chat">Chat Mode</option>
-    </select>
-    <button class="mode-select" onclick="switchMode()">Switch Mode</button>
+    <!-- Mode switch -->
+    <div class="mode-controls">
+      <select id="modeSelect">
+        <option value="debate">Debate Mode</option>
+        <option value="chat">Chat Mode</option>
+      </select>
+      <button class="mode-select" onclick="switchMode()">Switch Mode</button>
+    </div>
 
+    <!-- Action buttons -->
     <div class="button-group">
       <button onclick="startDebate()">Start Debate</button>
       <button onclick="clearChat()">Clear</button>
     </div>
   </div>
 
-  <script>
-    let currentMode = 'debate'; // Default mode is Debate
-
-    async function startDebate() {
-      const topic = document.getElementById("topicInput").value.trim();
-      const rounds = parseInt(document.getElementById("roundInput").value);
-      if (!topic) return alert("Please enter a topic first.");
-      if (isNaN(rounds) || rounds <= 0) return alert("Please enter a valid number of rounds.");
-
-      document.getElementById("chatBox").innerHTML = "";
-
-      for (let i = 0; i < rounds; i++) {
-        const res = await fetch("/debate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ topic: topic })
-        });
-
-        const data = await res.json();
-        appendMessage(data.role, data.reply);
-        await new Promise(r => setTimeout(r, 800));
-      }
-    }
-
-    async function switchMode() {
-      currentMode = document.getElementById("modeSelect").value;
-      
-      // Switch mode by sending the mode change request to the backend
-      const res = await fetch("/switch_mode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: currentMode })
-      });
-      
-      const data = await res.json();
-      alert(data.status);
-    }
-
-    function appendMessage(role, message) {
-      const chatBox = document.getElementById("chatBox");
-      const bubble = document.createElement("div");
-      bubble.className = `bubble ${role.toLowerCase()}`;
-      bubble.innerHTML = `<strong>${role}:</strong><br>${message}`;
-      chatBox.appendChild(bubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function clearChat() {
-      document.getElementById("chatBox").innerHTML = "";
-      document.getElementById("topicInput").value = "";
-      document.getElementById("roundInput").value = "6";
-    }
-  </script>
+  <script src="/main.js"></script>
 </body>
 </html>
