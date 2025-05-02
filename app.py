@@ -99,7 +99,8 @@ def debate():
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are playing the role of {role}. Your task: {agent_instructions[role]} Stay in character. The debate topic is: '{debate_topic}'. Limit your response to no more than 80 words and around 3–4 short sentences. Use clear and concise language. Avoid long explanations or multiple examples."
+                    # CoT prompt: This sentence encourages the model to internally reason before generating an answer (implicit Chain-of-Thought).
+                    "content": f"You are playing the role of {role}. Your task: {agent_instructions[role]} Stay in character. The debate topic is: '{debate_topic}'. Think through your reasoning internally before responding. Then write your reply in 3–4 short sentences, under 80 words. Be focused, clear, and avoid examples or repetition."
                 },
                 {
                     "role": "user",
