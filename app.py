@@ -4,19 +4,21 @@ import torch
 import os
 import re
 
-# Serve /static normally
+from openai import OpenAI
+
+# Set OpenAI API key
+os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
+
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 
-# Add route to serve main.js if it's in the root directory
 @app.route("/main.js")
 def serve_main_js():
-    return send_from_directory(os.getcwd(), "main.js")  # serves from current working directory
+    return send_from_directory(os.getcwd(), "main.js")
 
-# Load local GPT-Neo model and tokenizer
+# Load local GPT-Neo model
 model_name = "EleutherAI/gpt-neo-125M"
 tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 model = GPTNeoForCausalLM.from_pretrained(model_name)
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
@@ -33,8 +35,10 @@ debate_history = {role: [] for role in roles}
 current_turn = 0
 debate_topic = "Artificial intelligence"
 current_mode = "debate"
-current_model = "local"
+current_model = "openai"
+
 openai_api_key = os.environ.get("OPENAI_API_KEY", "")
+client = OpenAI(api_key=openai_api_key)
 
 @app.route("/")
 def index():
@@ -42,7 +46,7 @@ def index():
 
 @app.route("/set_model", methods=["POST"])
 def set_model():
-    global current_model, openai_api_key
+    global current_model, openai_api_key, client
     data = request.get_json()
     model = data.get("model", "").strip().lower()
     api_key = data.get("api_key", "").strip()
@@ -54,6 +58,7 @@ def set_model():
     if model == "openai":
         if api_key:
             openai_api_key = api_key
+            client = OpenAI(api_key=api_key)
         elif not openai_api_key:
             return jsonify({"error": "API key is required for OpenAI mode."}), 400
 
@@ -84,24 +89,31 @@ def debate():
         for r in roles:
             debate_history[r] = []
 
-    prompt = "\n".join([
+    formatted_history = "\n".join([
         f"{r}: {msg}" for r in roles for msg in debate_history[r]
-    ]) + f"\n{role}:"
+    ])
 
     if current_model == "openai":
-        import openai
-        openai.api_key = openai_api_key
-        messages = [
-            {"role": "system", "content": f"You are {role}. {agent_instructions[role]} The debate topic is: {debate_topic}"},
-            {"role": "user", "content": prompt}
-        ]
-        response = openai.ChatCompletion.create(model="gpt-4o", messages=messages)
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are playing the role of {role}. Your task: {agent_instructions[role]} Stay in character. The debate topic is: '{debate_topic}'. Limit your response to no more than 80 words and around 3–4 short sentences. Use clear and concise language. Avoid long explanations or multiple examples."
+                },
+                {
+                    "role": "user",
+                    "content": f"Here is the conversation so far:\n\n{formatted_history}\n\nNow continue as {role}:"
+                }
+            ]
+        )
         reply = response.choices[0].message.content.strip()
     else:
+        prompt = formatted_history + f"\n{role}:"
         input_ids = tokenizer.encode(prompt, return_tensors="pt", truncation=True, max_length=800)
         output = model.generate(
             input_ids.to(device),
-            max_new_tokens=60,
+            max_new_tokens=200,
             pad_token_id=tokenizer.eos_token_id,
             no_repeat_ngram_size=3,
             repetition_penalty=1.2,
@@ -133,9 +145,7 @@ def chat():
     full_context = chat_history["user"] + chat_history["assistant"]
 
     if current_model == "openai":
-        import openai
-        openai.api_key = openai_api_key
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": message}]
         )
