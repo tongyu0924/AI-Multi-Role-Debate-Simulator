@@ -21,6 +21,7 @@ client = OpenAI(api_key=openai_api_key)
 current_model = "openai"
 current_mode = "debate"
 long_term_memory = []
+debate_rounds = 0
 
 class DebateAgent:
     def __init__(self, role_name, instruction, model="openai", tokenizer=None, model_instance=None):
@@ -70,7 +71,7 @@ class DebateAgent:
                 top_p=0.95
             )
             decoded = self.tokenizer.decode(output[0], skip_special_tokens=True)
-            return re.split(r'\n(?:Pro|Con|Expert|Observer):', decoded)[0].strip()
+            return re.split(r'\n(?:Pro|Con|Expert|Observer|Verdict):', decoded)[0].strip()
 
     def act(self, action):
         self.history.append(action)
@@ -87,15 +88,31 @@ class DebateManager:
         self.agents = agents
         self.topic = topic
         self.turn = 0
+        self.rounds = 0
 
     def get_context(self):
         return "\n".join(long_term_memory)
 
     def next_turn(self, client=None):
+        global debate_rounds
+        if self.rounds >= debate_rounds * (len(self.agents) - 1):
+            if self.turn == 0:
+                verdict_agent = next(a for a in self.agents if a.role == "Verdict")
+                context = self.get_context()
+                reply = verdict_agent.step(self.topic, context, client)
+                return {"role": verdict_agent.role, "reply": reply}
+            else:
+                return {"role": "", "reply": ""}
+
         agent = self.agents[self.turn]
+        if agent.role == "Verdict":
+            self.turn = (self.turn + 1) % len(self.agents)
+            return self.next_turn(client)
+
         context = self.get_context()
         reply = agent.step(self.topic, context, client)
         self.turn = (self.turn + 1) % len(self.agents)
+        self.rounds += 1
         return {"role": agent.role, "reply": reply}
 
     def reset(self):
@@ -103,12 +120,14 @@ class DebateManager:
             agent.history = []
         long_term_memory.clear()
         self.turn = 0
+        self.rounds = 0
 
 agent_instructions = {
     "Pro": "Argue in favor of the topic, presenting supporting evidence and reasoning.",
     "Con": "Argue against the topic, highlighting risks, flaws, or counterexamples.",
     "Expert": "Offer neutral, technical, or factual insights to deepen the discussion without taking sides.",
-    "Observer": "Summarize, reflect, or critique the ongoing debate, often adding meta-level commentary."
+    "Observer": "Summarize, reflect, or critique the ongoing debate, often adding meta-level commentary.",
+    "Verdict": "Summarize the overall debate and provide a final verdict. Consider all sides and reasoning provided."
 }
 
 agents = [
@@ -116,6 +135,7 @@ agents = [
     DebateAgent("Con", agent_instructions["Con"], model=current_model, tokenizer=tokenizer, model_instance=local_model),
     DebateAgent("Expert", agent_instructions["Expert"], model=current_model, tokenizer=tokenizer, model_instance=local_model),
     DebateAgent("Observer", agent_instructions["Observer"], model=current_model, tokenizer=tokenizer, model_instance=local_model),
+    DebateAgent("Verdict", agent_instructions["Verdict"], model=current_model, tokenizer=tokenizer, model_instance=local_model),
 ]
 manager = DebateManager(agents)
 
@@ -153,15 +173,18 @@ def switch_mode():
 
 @app.route("/debate", methods=["POST"])
 def debate():
+    global debate_rounds
     if current_mode != "debate":
         return jsonify({"error": "Switch to debate mode first."}), 400
 
     data = request.get_json()
     topic = data.get("topic", "").strip()
+    rounds = data.get("rounds", 6)
 
     if topic and all(len(agent.history) == 0 for agent in agents):
         manager.topic = topic
         manager.reset()
+        debate_rounds = rounds
 
     result = manager.next_turn(client if current_model == "openai" else None)
     return jsonify(result)
@@ -184,3 +207,4 @@ def reset():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5009)
+    
