@@ -19,6 +19,49 @@ AI-Debate-Simulator is an interactive debate simulation powered by AI. This proj
 - **Observer**: Reflects on the overall debate with **meta-level commentary**, summaries, or critiques.
 - **Verdict** (Lead Agent): Delivers a **final judgment or summary** after all rounds, using both the shared dialogue history and a focused team memory that contains only agent responses.
 
+## Architecture Overview
+Below is a high-level diagram of the system's modular architecture:
+```
++-----------------------+
+| Web Frontend (UI) |
++----------+------------+
+|
+v
++---------------------------+
+| Flask Server |
+| (Debate Orchestrator) |
++---------------------------+
+|
+v
++---------------------------+
+| Debate Manager |
+| - Turn Scheduling |
+| - Topic Assignment |
+| - Verdict Invocation |
++---------------------------+
+|
+v
++-------------------------------------------+
+| DebateAgent Instances |
+| +--------+ +------+ +---------+ |
+| | Pro | | Con | | Expert | ... |
++-------------------------------------------+
+|
+v
++-------------------------------------------+
+| Shared Memory Buffers |
+| - long_term_memory (for all agents) |
+| - verdict_memory (for lead agent only) |
++-------------------------------------------+
+|
+v
++-------------------------------------------+
+| LLM Backends (Hot-Swappable) |
+| - GPT-Neo (Local) |
+| - OpenAI GPT-4o (API) |
++-------------------------------------------+
+```
+
 ## Architecture & Design
 
 This project is inspired by [agent-squad](https://github.com/awslabs/agent-squad), a multi-agent coordination framework.
