@@ -4,6 +4,10 @@ AI-Debate-Simulator is an interactive debate simulation powered by AI. This proj
 
 ![Demo Screenshot](demo.png)
 
+<p style="font-size: 12px; color: gray;">
+Image source: <a href="https://oeur-studio.weebly.com/oeurwe.html" target="_blank">oeur-studio.weebly.com</a>
+</p>
+
 ## Features:
 - **🧑‍🤝‍🧑 Multi-Role Debate Mode**  
   AI agents take on distinct roles (Pro, Con, Expert, Observer, Verdict) and simulate structured debates on user-defined topics.
