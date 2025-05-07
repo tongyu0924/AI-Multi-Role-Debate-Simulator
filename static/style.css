@@ -112,3 +112,12 @@
 .history-floating-btn:hover {
   background-color: #d0d0d0;
 }
+
+#chatBox > .character-scene {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
