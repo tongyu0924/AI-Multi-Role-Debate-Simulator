@@ -17,6 +17,32 @@ AI-Debate-Simulator is an interactive debate simulation powered by AI. This proj
 - **Expert**: Offers neutral, technical, or factual insights to deepen the discussion without taking sides.
 - **Observer**: Summarizes, reflects, or critiques the ongoing debate, often adding meta-level commentary.
 
+## Architecture & Design
+
+This project is inspired by [agent-squad](https://github.com/awslabs/agent-squad), a multi-agent coordination framework.
+
+It uses a **modular, turn-based architecture** with the following components:
+
+- **Role-based Agent Modeling**  
+  Each agent is assigned a distinct role (Pro, Con, Expert, Observer) and generates replies according to predefined instructions.
+
+- **Shared Long-Term Memory**  
+  All utterances from previous rounds are stored in a global memory structure. This memory is passed into each agent as context, enabling continuity across multiple turns.
+
+- **Model Abstraction Layer**  
+  Agents can run on a local lightweight model (GPT-Neo) or use the powerful OpenAI GPT-4o via API. You can switch models dynamically without restarting the server.
+
+- **Debate Manager**  
+  Handles round-robin coordination between agents, tracks debate topics, and resets state as needed.
+
+- **Extensibility**  
+  The architecture supports future improvements such as:
+  - Lead agent summarization
+  - Enhanced memory retrieval or compression
+  - Integration with external tools or APIs
+
+This modular structure makes the system easy to extend and suitable for both interactive demos and research on multi-agent communication.
+
 ## Requirements:
 - Python 3.8
 - Install the necessary dependencies with `pip`:
