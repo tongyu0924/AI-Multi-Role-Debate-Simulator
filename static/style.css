@@ -14,11 +14,11 @@
 
 /* Grid layout for all roles */
 .role-grid {
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-end; /* Align all characters to the same bottom line */
-  flex-wrap: wrap;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  justify-items: center;
+  align-items: flex-end;
 }
 
 /* Each character block */
@@ -29,13 +29,13 @@
   align-items: center;
   text-align: center;
   position: relative;
-  margin-top: 80px; /* Added margin-top to move characters a bit lower */
+  margin-top: 80px;
 }
 
 /* Character avatar */
 .avatar-big {
-  width: 96px;
-  height: 96px;
+  width: 88px;
+  height: 88px;
   object-fit: contain;
   margin-bottom: 8px;
   border-radius: 10px;
@@ -51,6 +51,13 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   font-size: 14px;
   box-sizing: border-box;
+}
+
+/* Special style for Verdict role */
+.dialogue-bubble.verdict {
+  background-color: #f0f0f0;
+  border-color: #555;
+  font-weight: bold;
 }
 
 /* History bubble */
