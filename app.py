@@ -101,25 +101,34 @@ class DebateManager:
 
     def next_turn(self, client=None):
         global debate_rounds
-        if self.rounds >= debate_rounds * (len(self.agents) - 1):
-            if self.turn == 0:
-                verdict_agent = next(a for a in self.agents if a.role == "Verdict")
+
+        total_turns = debate_rounds * 4  # 4 main agents
+
+        # If all main turns are finished, let Verdict speak once
+        if self.rounds >= total_turns:
+            verdict_agent = next(a for a in self.agents if a.role == "Verdict")
+            if not verdict_agent.history:  # Verdict only speaks once
                 context = self.get_context()
                 reply = verdict_agent.step(self.topic, context, client)
                 return {"role": verdict_agent.role, "reply": reply}
             else:
-                return {"role": "", "reply": ""}
+                return {"role": "", "reply": ""}  # Debate truly ended
 
-        agent = self.agents[self.turn]
-        if agent.role == "Verdict":
+        # Get the current agent (skip Verdict)
+        current_agent = self.agents[self.turn]
+        if current_agent.role == "Verdict":
             self.turn = (self.turn + 1) % len(self.agents)
-            return self.next_turn(client)
+            current_agent = self.agents[self.turn]
 
+        # Perform action
         context = self.get_context()
-        reply = agent.step(self.topic, context, client)
+        reply = current_agent.step(self.topic, context, client)
+
+        # Advance turn and round
         self.turn = (self.turn + 1) % len(self.agents)
         self.rounds += 1
-        return {"role": agent.role, "reply": reply}
+
+        return {"role": current_agent.role, "reply": reply}
 
     def reset(self):
         for agent in self.agents:
