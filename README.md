@@ -12,10 +12,12 @@ AI-Debate-Simulator is an interactive debate simulation powered by AI. This proj
 - **Round-based Discussion**: Roles take turns speaking in multiple structured rounds
 
 ## Roles and Their Functions
-- **Pro**: Argues in favor of the debate topic, presenting supporting evidence and reasoning.
-- **Con**: Argues against the debate topic, highlighting risks, flaws, or counterexamples.
-- **Expert**: Offers neutral, technical, or factual insights to deepen the discussion without taking sides.
-- **Observer**: Summarizes, reflects, or critiques the ongoing debate, often adding meta-level commentary.
+
+- **Pro**: Argues **in favor** of the topic, presenting supporting evidence and logical reasoning.
+- **Con**: Argues **against** the topic, pointing out risks, flaws, or counterexamples.
+- **Expert**: Provides **neutral and technical** insights to enrich the discussion without taking sides.
+- **Observer**: Reflects on the overall debate with **meta-level commentary**, summaries, or critiques.
+- **Verdict** (Lead Agent): Delivers a **final judgment or summary** after all rounds, using both the shared dialogue history and a focused team memory that contains only agent responses.
 
 ## Architecture & Design
 
@@ -23,25 +25,29 @@ This project is inspired by [agent-squad](https://github.com/awslabs/agent-squad
 
 It uses a **modular, turn-based architecture** with the following components:
 
-- **Role-based Agent Modeling**  
-  Each agent is assigned a distinct role (Pro, Con, Expert, Observer) and generates replies according to predefined instructions.
+- **Role-Based Agent Modeling**  
+  Each agent is assigned a distinct role (Pro, Con, Expert, Observer, Verdict) and generates replies according to predefined behavioral instructions.
 
 - **Shared Long-Term Memory**  
-  All utterances from previous rounds are stored in a global memory structure. This memory is passed into each agent as context, enabling continuity across multiple turns.
+  All utterances are stored in a global memory buffer. This shared memory is passed to every agent as dialogue context to ensure continuity across turns.
+
+- **Lead Agent with Team Memory**  
+  A dedicated lead agent (`Verdict`) summarizes the debate at the end. In addition to shared memory, it accesses a specialized **team memory** (`verdict_memory`) that accumulates only the statements from other agents — giving it a focused view for summarization or judgment.
 
 - **Model Abstraction Layer**  
-  Agents can run on a local lightweight model (GPT-Neo) or use the powerful OpenAI GPT-4o via API. You can switch models dynamically without restarting the server.
+  Each agent can run on either a local model (GPT-Neo) or OpenAI’s GPT-4o. Models can be hot-swapped at runtime without restarting the server.
 
 - **Debate Manager**  
-  Handles round-robin coordination between agents, tracks debate topics, and resets state as needed.
+  Orchestrates agent turns in a round-robin fashion. After the final round, it invokes the `Verdict` agent to provide a conclusion.
 
 - **Extensibility**  
-  The architecture supports future improvements such as:
-  - Lead agent summarization
-  - Enhanced memory retrieval or compression
-  - Integration with external tools or APIs
+  The system supports further improvements such as:
+  - Injecting user notes into lead agent context
+  - Memory compression or retrieval augmentation
+  - Multi-lead hierarchical structures
+  - Integration with tools or search APIs
 
-This modular structure makes the system easy to extend and suitable for both interactive demos and research on multi-agent communication.
+This architecture enables experimentation with multi-agent reasoning, memory separation, and lead-driven summarization.
 
 ## Requirements:
 - Python 3.8
