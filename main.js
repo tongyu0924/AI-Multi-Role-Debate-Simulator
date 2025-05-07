@@ -3,10 +3,11 @@ const roleHistory = {
   pro: [],
   con: [],
   expert: [],
-  observer: []
+  observer: [],
+  verdict: [] 
 };
 
-// Renders all four characters side by side with their latest message
+// Renders all five characters side by side with their latest message
 function renderAllRoles() {
   const chatbox = document.getElementById("chatBox");
   chatbox.innerHTML = "";
@@ -15,7 +16,8 @@ function renderAllRoles() {
     pro: "/static/images/pro_role.png",
     con: "/static/images/con_role.png",
     expert: "/static/images/expert.png",
-    observer: "/static/images/observer.png"
+    observer: "/static/images/observer.png",
+    verdict: "/static/images/verdict.png" // ✅ New image for Verdict
   };
 
   const container = document.createElement("div");
@@ -26,7 +28,7 @@ function renderAllRoles() {
     wrapper.className = "character-scene";
 
     const avatar = document.createElement("img");
-    avatar.src = roleImages[role];
+    avatar.src = roleImages[role] || "/static/images/default.png";
     avatar.alt = role;
     avatar.className = "avatar-big";
     avatar.onerror = () => avatar.src = "/static/images/default.png";
@@ -70,7 +72,7 @@ function showCombinedHistory() {
   const rounds = Math.max(...Object.values(roleHistory).map(arr => arr.length));
 
   for (let i = 0; i < rounds; i++) {
-    for (const role of ["pro", "con", "expert", "observer"]) {
+    for (const role of ["pro", "con", "expert", "observer", "verdict"]) {
       if (roleHistory[role][i]) {
         combined.push({ role, msg: roleHistory[role][i] });
       }
@@ -80,7 +82,7 @@ function showCombinedHistory() {
   combined.forEach((entry, index) => {
     const item = document.createElement("li");
     item.className = "history-bubble";
-    item.innerHTML = `<strong>Round ${Math.floor(index / 4) + 1} [${capitalize(entry.role)}]:</strong> ${entry.msg}`;
+    item.innerHTML = `<strong>Round ${Math.floor(index / 5) + 1} [${capitalize(entry.role)}]:</strong> ${entry.msg}`;
     list.appendChild(item);
   });
 
@@ -105,7 +107,7 @@ async function startDebate() {
   Object.keys(roleHistory).forEach(r => roleHistory[r] = []);
   await fetch('/reset', { method: "POST" });
 
-  for (let i = 0; i < rounds * 4; i++) {
+  for (let i = 0; i < rounds * 5; i++) { // 5 roles now
     const res = await fetch("/debate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
