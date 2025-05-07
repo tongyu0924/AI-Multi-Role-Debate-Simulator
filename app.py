@@ -21,6 +21,7 @@ client = OpenAI(api_key=openai_api_key)
 current_model = "openai"
 current_mode = "debate"
 long_term_memory = []
+verdict_memory = []
 debate_rounds = 0
 
 class DebateAgent:
@@ -33,11 +34,14 @@ class DebateAgent:
         self.history = []
 
     def observe(self, topic, context):
+        full_context = context
+        if self.role == "Verdict" and verdict_memory:
+            full_context += "\n\n[Additional Notes for Verdict Agent]\n" + "\n".join(verdict_memory)
         return {
             "role": self.role,
             "instruction": self.instruction,
             "topic": topic,
-            "context": context
+            "context": full_context
         }
 
     def decide_action(self, obs, client=None):
@@ -76,6 +80,8 @@ class DebateAgent:
     def act(self, action):
         self.history.append(action)
         long_term_memory.append(f"{self.role}: {action}")
+        if self.role != "Verdict":
+            verdict_memory.append(f"{self.role}: {action}")
         return action
 
     def step(self, topic, context, client=None):
@@ -119,6 +125,7 @@ class DebateManager:
         for agent in self.agents:
             agent.history = []
         long_term_memory.clear()
+        verdict_memory.clear()
         self.turn = 0
         self.rounds = 0
 
@@ -198,7 +205,10 @@ def get_history(role):
 
 @app.route("/memory", methods=["GET"])
 def get_memory():
-    return jsonify({"long_term_memory": long_term_memory})
+    return jsonify({
+        "long_term_memory": long_term_memory,
+        "verdict_memory": verdict_memory
+    })
 
 @app.route("/reset", methods=["POST"])
 def reset():
@@ -207,4 +217,3 @@ def reset():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5009)
-    
