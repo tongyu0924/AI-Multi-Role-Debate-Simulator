@@ -20,6 +20,7 @@ client = OpenAI(api_key=openai_api_key)
 
 current_model = "openai"
 current_mode = "debate"
+long_term_memory = []
 
 class DebateAgent:
     def __init__(self, role_name, instruction, model="openai", tokenizer=None, model_instance=None):
@@ -73,6 +74,7 @@ class DebateAgent:
 
     def act(self, action):
         self.history.append(action)
+        long_term_memory.append(f"{self.role}: {action}")
         return action
 
     def step(self, topic, context, client=None):
@@ -87,9 +89,7 @@ class DebateManager:
         self.turn = 0
 
     def get_context(self):
-        return "\n".join([
-            f"{agent.role}: {msg}" for agent in self.agents for msg in agent.history
-        ])
+        return "\n".join(long_term_memory)
 
     def next_turn(self, client=None):
         agent = self.agents[self.turn]
@@ -101,6 +101,7 @@ class DebateManager:
     def reset(self):
         for agent in self.agents:
             agent.history = []
+        long_term_memory.clear()
         self.turn = 0
 
 agent_instructions = {
@@ -171,6 +172,10 @@ def get_history(role):
         if agent.role.lower() == role.lower():
             return jsonify({"role": agent.role, "history": agent.history})
     return jsonify({"error": "Invalid role"}), 400
+
+@app.route("/memory", methods=["GET"])
+def get_memory():
+    return jsonify({"long_term_memory": long_term_memory})
 
 @app.route("/reset", methods=["POST"])
 def reset():
