@@ -11,17 +11,18 @@
   <button class="history-floating-btn" onclick="showCombinedHistory()">📄 View Full History</button>
 
   <div class="container">
-    <h1>AI Debate Simulator</h1>
+    <h1 style="text-align: center;">AI Debate Simulator</h1>
 
-    <!-- Input for topic and round -->
+    <!-- Topic input -->
     <label for="topicInput">Enter a debate topic:</label>
     <input type="text" id="topicInput" placeholder="e.g. Should AI agents cooperate or compete?">
 
+    <!-- Round input -->
     <label for="roundInput">Number of Rounds:</label>
     <input type="number" id="roundInput" value="6" min="1" max="20" />
 
     <!-- Dialogue display area -->
-    <div id="chatBox" class="role-grid"></div>
+    <div id="chatBox"></div>
 
     <!-- Mode switch -->
     <div class="mode-controls">
