@@ -8,7 +8,6 @@ import re
 # Set OpenAI API key
 # os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
 
-app = Flask(__name__, static_folder='static', static_url_path='/static')
 model_name = "EleutherAI/gpt-neo-125M"
 tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 local_model = GPTNeoForCausalLM.from_pretrained(model_name)
@@ -34,12 +33,18 @@ class DebateAgent:
         self.history = []
 
     def observe(self, topic, context):
-        full_context = context
+        # Smart Context Management: only recent context, excluding self
+        recent_lines = long_term_memory[-4:]
+        others = "\n".join(line for line in recent_lines if not line.startswith(self.role + ":"))
+
+        full_context = others
         if self.role == "Verdict" and verdict_memory:
             full_context += "\n\n[Additional Notes for Verdict Agent]\n" + "\n".join(verdict_memory)
+
         return {
             "role": self.role,
-            "instruction": self.instruction,
+            # Team Coordination: encourage interaction with others
+            "instruction": self.instruction + " Try to respond to or build on others' remarks if relevant.",
             "topic": topic,
             "context": full_context
         }
