@@ -111,7 +111,7 @@ async function startDebate() {
     const res = await fetch("/debate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic })
+      body: JSON.stringify({ topic, rounds })
     });
 
     const data = await res.json();

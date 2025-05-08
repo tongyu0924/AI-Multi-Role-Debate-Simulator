@@ -119,13 +119,18 @@ class DebateManager:
         if current_agent.role == "Verdict":
             self.turn = (self.turn + 1) % len(self.agents)
             current_agent = self.agents[self.turn]
-
+            
         # Perform action
         context = self.get_context()
         reply = current_agent.step(self.topic, context, client)
 
         # Advance turn and round
         self.turn = (self.turn + 1) % len(self.agents)
+        
+        if self.rounds >= total_turns:
+            self.turn = 4
+            current_agent = self.agents[self.turn]
+         
         self.rounds += 1
 
         return {"role": current_agent.role, "reply": reply}
