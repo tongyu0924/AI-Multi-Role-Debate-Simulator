@@ -1,6 +1,6 @@
 # Multi-Role Debate Simulator
 
-AI-Debate-Simulator is an interactive debate simulation powered by AI. This project allows two AI agents to engage in a debate on a given topic. The agents take on opposing roles (Pro and Con) and generate responses based on the input topic.
+GPT-MultiDebate is an interactive simulation that enables multiple AI personas to engage in structured debates. Powered by GPT, this project assigns distinct roles (Pro, Con, Expert, Observer, Verdict) to AI agents, allowing them to generate dynamic, multi-perspective responses on a given topic.
 
 ![Demo Screenshot](demo.png)
 
