@@ -1,0 +1,123 @@
+/* Main chat container */
+#chatbox {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  height: 420px;
+  border: 1px solid #ccc;
+  padding: 12px;
+  overflow-y: auto;
+  background: #f9f9f9;
+  font-family: sans-serif;
+  box-sizing: border-box;
+}
+
+/* Grid layout for all roles */
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  justify-items: center;
+  align-items: flex-end;
+}
+
+/* Each character block */
+.character-scene {
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  margin-top: 80px;
+}
+
+/* Character avatar */
+.avatar-big {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  margin-bottom: 8px;
+  border-radius: 10px;
+}
+
+/* Dialogue bubble */
+.dialogue-bubble {
+  width: 100%;
+  background-color: #ffffff;
+  padding: 10px 12px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Special style for Verdict role */
+.dialogue-bubble.verdict {
+  background-color: #f0f0f0;
+  border-color: #555;
+  font-weight: bold;
+}
+
+/* History bubble */
+.history-bubble {
+  background: #fff;
+  border-left: 4px solid #999;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Role tab buttons */
+.role-tabs {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.role-tabs button {
+  flex: 1 1 22%;
+  margin: 4px;
+  padding: 10px;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.role-tabs button:hover {
+  background-color: #d0d0d0;
+}
+
+/* Floating history button at top-right corner */
+.history-floating-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 8px 14px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  z-index: 1000;
+  transition: background-color 0.2s;
+}
+
+.history-floating-btn:hover {
+  background-color: #d0d0d0;
+}
+
+#chatBox > .character-scene {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
