@@ -117,18 +117,22 @@ def reset():
 def text_to_speech():
     data = request.get_json()
     text = data.get("text", "").strip()
+    role = data.get("role", "").strip().lower()
 
-    if not text:
-        return jsonify({"error": "No text provided."}), 400
+    if not text or not role:
+        return jsonify({"error": "Missing text or role"}), 400
 
     static_dir = os.path.join(os.path.dirname(__file__), "static")
     os.makedirs(static_dir, exist_ok=True)
 
-    filepath = os.path.join(static_dir, "tts_output.mp3")
+    filename = f"tts_{role}.mp3"
+    filepath = os.path.join(static_dir, filename)
+
     tts = gTTS(text=text, lang="en")
     tts.save(filepath)
 
-    return jsonify({"audio_url": "/static/tts_output.mp3"})
+    return jsonify({"audio_url": f"/static/{filename}"})
+
 
 # Run the Flask app
 if __name__ == "__main__":

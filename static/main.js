@@ -41,16 +41,25 @@ function renderAllRoles() {
     const bubble = document.createElement("div");
     bubble.className = "dialogue-bubble";
     const latestMsg = roleHistory[role].at(-1) || "...";
-    const escapedMsg = latestMsg.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
-    bubble.innerHTML = `
-      <div class="role-name">
-        ${capitalize(role)}
-        <button class="speak-btn" onclick="speakText('${escapedMsg}')">🔊</button>
-      </div>
-      <div class="message-text">${latestMsg}</div>
-    `;
+    const roleNameDiv = document.createElement("div");
+    roleNameDiv.className = "role-name";
+    roleNameDiv.innerText = capitalize(role);
 
+    const speakBtn = document.createElement("button");
+    speakBtn.className = "speak-btn";
+    speakBtn.textContent = "🔊";
+    speakBtn.title = "Play audio";
+    speakBtn.addEventListener("click", () => speakText(latestMsg, role));
+
+    roleNameDiv.appendChild(speakBtn);
+    bubble.appendChild(roleNameDiv);
+
+    const msgDiv = document.createElement("div");
+    msgDiv.className = "message-text";
+    msgDiv.innerText = latestMsg;
+
+    bubble.appendChild(msgDiv);
     wrapper.appendChild(bubble);
     wrapper.appendChild(avatar);
     container.appendChild(wrapper);
@@ -61,26 +70,26 @@ function renderAllRoles() {
 }
 
 // Text-to-speech: toggles playback/pause or fetches new audio
-function speakText(text) {
-  // Same text, already playing → pause
+function speakText(text, role) {
+  // If the same text is playing, pause it
   if (text === lastText && currentAudio && isPlaying) {
     currentAudio.pause();
     isPlaying = false;
     return;
   }
 
-  // Same text, paused → resume
+  // If the same text was paused, resume it
   if (text === lastText && currentAudio && !isPlaying) {
     currentAudio.play().catch(err => console.error("Resume error:", err));
     isPlaying = true;
     return;
   }
 
-  // New text → fetch from backend
+  // New text or different role → request new audio
   fetch("/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ text, role })
   })
     .then(res => res.json())
     .then(data => {
