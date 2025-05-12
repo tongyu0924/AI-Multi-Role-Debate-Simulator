@@ -1,3 +1,8 @@
+// Global audio player state
+let currentAudio = null;
+let isPlaying = false;
+let lastText = "";
+
 // Stores all dialogue history per role
 const roleHistory = {
   pro: [],
@@ -7,7 +12,7 @@ const roleHistory = {
   verdict: [] 
 };
 
-// Renders all five characters side by side with their latest message
+// Renders all roles with latest messages and speaker buttons
 function renderAllRoles() {
   const chatbox = document.getElementById("chatBox");
   chatbox.innerHTML = "";
@@ -17,7 +22,7 @@ function renderAllRoles() {
     con: "/static/images/con_role.png",
     expert: "/static/images/expert.png",
     observer: "/static/images/observer.png",
-    verdict: "/static/images/verdict.png" // ✅ New image for Verdict
+    verdict: "/static/images/verdict.png"
   };
 
   const container = document.createElement("div");
@@ -36,9 +41,13 @@ function renderAllRoles() {
     const bubble = document.createElement("div");
     bubble.className = "dialogue-bubble";
     const latestMsg = roleHistory[role].at(-1) || "...";
+    const escapedMsg = latestMsg.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
     bubble.innerHTML = `
-      <div class="role-name">${capitalize(role)}</div>
+      <div class="role-name">
+        ${capitalize(role)}
+        <button class="speak-btn" onclick="speakText('${escapedMsg}')">🔊</button>
+      </div>
       <div class="message-text">${latestMsg}</div>
     `;
 
@@ -49,6 +58,49 @@ function renderAllRoles() {
 
   chatbox.appendChild(container);
   chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+// Text-to-speech: toggles playback/pause or fetches new audio
+function speakText(text) {
+  // Same text, already playing → pause
+  if (text === lastText && currentAudio && isPlaying) {
+    currentAudio.pause();
+    isPlaying = false;
+    return;
+  }
+
+  // Same text, paused → resume
+  if (text === lastText && currentAudio && !isPlaying) {
+    currentAudio.play().catch(err => console.error("Resume error:", err));
+    isPlaying = true;
+    return;
+  }
+
+  // New text → fetch from backend
+  fetch("/tts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  })
+    .then(res => res.json())
+    .then(data => {
+      currentAudio = new Audio(data.audio_url);
+      currentAudio.play().then(() => {
+        isPlaying = true;
+        lastText = text;
+      }).catch(err => {
+        console.error("Play error:", err);
+        isPlaying = false;
+      });
+
+      currentAudio.onended = () => {
+        isPlaying = false;
+        lastText = "";
+      };
+    })
+    .catch(err => {
+      console.error("TTS error:", err);
+    });
 }
 
 // Display combined full history
@@ -107,7 +159,7 @@ async function startDebate() {
   Object.keys(roleHistory).forEach(r => roleHistory[r] = []);
   await fetch('/reset', { method: "POST" });
 
-  for (let i = 0; i < rounds * 5; i++) { // 5 roles now
+  for (let i = 0; i < rounds * 5; i++) {
     const res = await fetch("/debate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

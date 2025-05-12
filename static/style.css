@@ -113,6 +113,7 @@
   background-color: #d0d0d0;
 }
 
+/* Center full-history panel */
 #chatBox > .character-scene {
   max-width: 700px;
   margin: 0 auto;
@@ -121,3 +122,31 @@
   align-items: center;
 }
 
+/* 🔊 Role name + speaker button in a row */
+.role-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 15px;
+  margin-bottom: 4px;
+  gap: 6px;
+}
+
+
+/* 🔊 Speaker button style */
+.speak-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  margin-left: 6px;
+  padding: 2px 4px;
+  transition: transform 0.15s ease;
+  line-height: 1;
+}
+
+
+.speak-btn:hover {
+  transform: scale(1.25);
+}
