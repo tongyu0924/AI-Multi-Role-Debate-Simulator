@@ -2,7 +2,7 @@
 
 GPT-MultiRole-Debate is an interactive simulation that enables multiple AI personas to engage in structured debates. Powered by GPT, this project assigns distinct roles (Pro, Con, Expert, Observer, Verdict) to AI agents, allowing them to generate dynamic, multi-perspective responses on a given topic.
 
-![Demo Screenshot](demo.png)
+![Demo Screenshot](screenshot.png)
 
 <p style="font-size: 12px; color: gray;">
 Image source: <a href="https://oeur-studio.weebly.com/oeurwe.html" target="_blank">oeur-studio.weebly.com</a>
