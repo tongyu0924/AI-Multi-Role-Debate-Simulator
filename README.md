@@ -8,6 +8,13 @@ GPT-MultiRole-Debate is an interactive simulation that enables multiple AI perso
 Image source: <a href="https://oeur-studio.weebly.com/oeurwe.html" target="_blank">oeur-studio.weebly.com</a>
 </p>
 
+## 🎥 Demo Video  
+[Click here to watch on YouTube](https://youtu.be/1myc39zXrhA)
+
+<a href="https://youtu.be/1myc39zXrhA" target="_blank">
+  <img src="https://img.youtube.com/vi/1myc39zXrhA/0.jpg" alt="Demo Video Thumbnail" width="480">
+</a>
+
 ## Features:
 - **🧑‍🤝‍🧑 Multi-Role Debate Mode**  
   AI agents take on distinct roles (Pro, Con, Expert, Observer, Verdict) and simulate structured debates on user-defined topics.
