@@ -12,8 +12,8 @@ Image source: <a href="https://oeur-studio.weebly.com/oeurwe.html" target="_blan
 - **🧑‍🤝‍🧑 Multi-Role Debate Mode**  
   AI agents take on distinct roles (Pro, Con, Expert, Observer, Verdict) and simulate structured debates on user-defined topics.
 
-- **💬 Chat Mode**  
-  Switch to freeform conversation with a single assistant agent.
+- **🔊 Text-to-Speech Support**
+Each message includes a speaker button to play audio using text-to-speech. Press the 🔊 icon again to pause or resume playback.
 
 - **🪄 Verdict Agent with Team Memory**  
   A dedicated lead agent (`Verdict`) provides a final summary after all rounds. It leverages a focused memory buffer that excludes its own utterances.
